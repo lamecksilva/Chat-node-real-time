@@ -21,11 +21,14 @@ let messages = [];
 io.on('connection', socket => {
   console.log(`Socket Connected: ${socket.id}`);
 
+  // Send a message for socket (param)
   socket.emit('previousMessages', messages);
 
+  // Listen messages from socker (param)
   socket.on('sendMessage', data => {
     messages.push(data);
 
+    // Send message for all sockets connecteds
     socket.broadcast.emit('receivedMessage', data);
   });
 });
