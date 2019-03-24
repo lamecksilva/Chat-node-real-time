@@ -1,51 +1,63 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
   <head>
     <meta charset="utf-8" />
-    <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1, shrink-to-fit=no"
-    />
-    <meta name="theme-color" content="#000000" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Chat Real Time</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js"></script>
 
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <link
-      rel="stylesheet"
-      href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css"
-      integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb"
-      crossorigin="anonymous"
-    />
-    <title>React App</title>
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <noscript> You need to enable JavaScript to run this app. </noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+    <form id="chat">
+      <input type="text" name="username" placeholder="Type your username" />
+      <div class="messages"></div>
+      <input type="text" name="message" placeholder="Type your message" />
+      <button type="submit">Send Message</button>
+    </form>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <script type="text/javascript">
+      var socket = io('http://localhost:3000');
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+      function renderMessage(message) {
+        $('.messages').append(
+          '<div class="message"><strong>' +
+            message.author +
+            ': </strong>' +
+            message.message +
+            '</div>'
+        );
+      }
+
+      socket.on('previousMessages', function(messages) {
+        for (message of messages) {
+          renderMessage(message);
+        }
+      });
+
+      socket.on('receivedMessage', function(message) {
+        renderMessage(message);
+      });
+
+      $('#chat').submit(function(event) {
+        event.preventDefault();
+
+        var author = $('input[name=username]').val();
+        var message = $('input[name=message]').val();
+
+        if (author.length && message.length) {
+          var messageObject = {
+            author: author,
+            message: message
+          };
+
+          renderMessage(messageObject);
+
+          socket.emit('sendMessage', messageObject);
+        }
+      });
+    </script>
   </body>
-
-  <script
-    src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
-    integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js"
-    integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh"
-    crossorigin="anonymous"
-  ></script>
-  <script
-    src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js"
-    integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ"
-    crossorigin="anonymous"
-  ></script>
 </html>
